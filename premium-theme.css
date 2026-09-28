@@ -2687,6 +2687,39 @@ img {
   background: #5bd33d;
   box-shadow: 0 10px 28px rgba(20, 91, 62, 0.42);
 }
+[data-theme="light"] .home-page .hero-typewriter,
+.hero-typewriter {
+  display: inline-block;
+  min-width: 4ch;
+  padding-right: 0.08em;
+  border-right: 0.045em solid rgba(219, 253, 255, 0.9);
+  white-space: nowrap;
+  animation: hero-typewriter-caret 0.95s steps(1, end) infinite;
+}
+@keyframes hero-typewriter-caret {
+  0%, 48% { border-right-color: rgba(219, 253, 255, 0.92); }
+  49%, 100% { border-right-color: transparent; }
+}
+[data-theme="light"] .home-page .hero-typewriter.is-static,
+.hero-typewriter.is-static {
+  border-right-color: transparent;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="light"] .home-page .hero-typewriter,
+  .hero-typewriter {
+    border-right-color: transparent;
+    animation: none;
+  }
+}
+@media (max-width: 700px) {
+  [data-theme="light"] .home-page .hero-company-name {
+    font-size: clamp(1.9rem, 7vw, 3.2rem);
+  }
+  [data-theme="light"] .home-page .hero-typewriter {
+    white-space: normal;
+  }
+}
 @media (max-width: 700px) {
   [data-theme="light"] .home-page .hero {
     background:

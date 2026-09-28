@@ -41,6 +41,60 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!image.closest("header") && !image.closest(".page-intro-media")) image.loading = "lazy";
   });
 
+  /* ── Hero Typewriter (Typing & Untyping effect) ──────────── */
+  const typewriter = document.querySelector(".hero-typewriter");
+
+  const phrases = [
+    "Mediception",
+    "Clinical Research",
+    "Medical Affairs",
+    "Real-world Evidence"
+  ];
+
+  if (typewriter) {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion) {
+      typewriter.textContent = phrases[0];
+      typewriter.classList.add("is-static");
+    } else {
+      let phraseIndex = 0;
+      let characterIndex = 0;
+      let deleting = false;
+
+      const typeDelay = (character) => (character === " " ? 140 : 85);
+      const deleteDelay = 50;
+
+      const tick = () => {
+        const phrase = phrases[phraseIndex];
+        if (!deleting) {
+          characterIndex += 1;
+          typewriter.textContent = phrase.slice(0, characterIndex);
+          if (characterIndex === phrase.length) {
+            deleting = true;
+            window.setTimeout(tick, 2200);
+            return;
+          }
+          window.setTimeout(tick, typeDelay(phrase[characterIndex - 1]));
+          return;
+        }
+
+        characterIndex -= 1;
+        typewriter.textContent = phrase.slice(0, characterIndex);
+        if (characterIndex === 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+          window.setTimeout(tick, 450);
+          return;
+        }
+        window.setTimeout(tick, deleteDelay);
+      };
+
+      typewriter.textContent = "";
+      tick();
+    }
+  }
+
   /* Hero service orbit: the capabilities move around a fixed center while labels stay upright. */
   const serviceOrbit = document.querySelector("[data-services-orbit]");
   const serviceNodes = serviceOrbit ? Array.from(serviceOrbit.querySelectorAll("[data-service-node]")) : [];
