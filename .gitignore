@@ -9,3 +9,6 @@ yarn-error.log*
 .env.local
 server.js
 serve.ps1
+package.json
+package-lock.json
+build.js
