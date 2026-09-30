@@ -9,6 +9,14 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ── Lucide Icons ─────────────────────────────────────── */
   if (window.lucide) window.lucide.createIcons();
 
+  document.querySelectorAll(".site-footer .footer-top").forEach((footerTop) => {
+    if (footerTop.querySelector(".footer-socials")) return;
+    const socials = document.createElement("div");
+    socials.className = "footer-socials";
+    socials.innerHTML = '<span class="footer-socials-label">Follow us</span><div class="footer-social-links" aria-label="Mediception social media"><a class="footer-social-link social-instagram" href="https://www.instagram.com/?hl=en" target="_blank" rel="noreferrer" aria-label="Mediception on Instagram"><span aria-hidden="true"></span></a><a class="footer-social-link social-facebook" href="https://www.facebook.com/share/p/1K3XzjUmKm/" target="_blank" rel="noreferrer" aria-label="Mediception on Facebook"><span aria-hidden="true"></span></a><span class="footer-social-icon social-x" role="img" aria-label="X"><span aria-hidden="true"></span></span><a class="footer-social-link social-linkedin" href="https://www.linkedin.com/company/mediception/" target="_blank" rel="noreferrer" aria-label="Mediception on LinkedIn"><span aria-hidden="true"></span></a><a class="footer-social-link social-youtube" href="https://www.youtube.com/@mediception" target="_blank" rel="noreferrer" aria-label="Mediception on YouTube"><span aria-hidden="true"></span></a></div>';
+    footerTop.appendChild(socials);
+  });
+
   /* ── Theme Toggle ─────────────────────────────────────── */
   document.documentElement.setAttribute("data-theme", "light");
   document.querySelectorAll("[data-theme-toggle]").forEach((toggle) => toggle.remove());
@@ -44,46 +52,95 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ── Hero Typewriter (Typing & Untyping effect) ──────────── */
   const typewriter = document.querySelector(".hero-typewriter");
 
-  const phrases = [
-    "Mediception",
-    "Clinical Research",
-    "Medical Affairs",
-    "Real-world Evidence"
+  const phraseContent = [
+    { title: "Clinical Research", tagline: "Turning rigorous research into evidence that improves care" },
+    { title: "Clinical Trial Support", tagline: "Supporting every study from protocol design to patient impact" },
+    { title: "Data analytics & HEOR", tagline: "Transforming complex healthcare data into decisions that matter" },
+    { title: "Medico-Marketing", tagline: "Translating medical value into clear, meaningful engagement" },
+    { title: "Scientific Writing", tagline: "Making complex science clear, credible, and ready to move" },
+    { title: "Digital Platforms", tagline: "Connecting healthcare intelligence to action through digital platforms" },
+    { title: "Market Research", tagline: "Revealing the insights and voices that shape healthcare decisions" },
+    { title: "Publication Support", tagline: "Bringing important evidence to the right audiences, clearly and confidently" }
   ];
+  const heroTagline = document.querySelector(".hero-tagline");
+  const reduceHeroMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (typewriter) {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduceMotion) {
-      typewriter.textContent = phrases[0];
+    if (reduceHeroMotion) {
+      typewriter.textContent = phraseContent[0].title;
+      if (heroTagline) heroTagline.textContent = phraseContent[0].tagline;
       typewriter.classList.add("is-static");
+      heroTagline?.classList.add("is-static");
     } else {
       let phraseIndex = 0;
-      let characterIndex = 0;
-      let deleting = false;
+      let titleIndex = 0;
+      let taglineIndex = 0;
+      let phase = "title";
 
       const typeDelay = (character) => (character === " " ? 140 : 85);
+      const taglineTypeDelay = (character) => (character === " " ? 60 : 34);
       const deleteDelay = 50;
+      const taglineDeleteDelay = 26;
+      const setCursorTarget = (target) => {
+        typewriter.classList.toggle("is-handoff", target === "tagline");
+        heroTagline?.classList.toggle("is-typing", target === "tagline");
+      };
 
       const tick = () => {
-        const phrase = phrases[phraseIndex];
-        if (!deleting) {
-          characterIndex += 1;
-          typewriter.textContent = phrase.slice(0, characterIndex);
-          if (characterIndex === phrase.length) {
-            deleting = true;
-            window.setTimeout(tick, 2200);
+        const content = phraseContent[phraseIndex];
+
+        if (phase === "title") {
+          setCursorTarget("title");
+          titleIndex += 1;
+          typewriter.textContent = content.title.slice(0, titleIndex);
+          if (titleIndex === content.title.length) {
+            phase = "tagline";
+            taglineIndex = 0;
+            if (heroTagline) heroTagline.textContent = "";
+            setCursorTarget("tagline");
+            window.setTimeout(tick, 320);
             return;
           }
-          window.setTimeout(tick, typeDelay(phrase[characterIndex - 1]));
+          window.setTimeout(tick, typeDelay(content.title[titleIndex - 1]));
           return;
         }
 
-        characterIndex -= 1;
-        typewriter.textContent = phrase.slice(0, characterIndex);
-        if (characterIndex === 0) {
-          deleting = false;
-          phraseIndex = (phraseIndex + 1) % phrases.length;
+        if (phase === "tagline") {
+          taglineIndex += 1;
+          if (heroTagline) heroTagline.textContent = content.tagline.slice(0, taglineIndex);
+          if (taglineIndex === content.tagline.length) {
+            phase = "hold";
+            window.setTimeout(tick, 2200);
+            return;
+          }
+          window.setTimeout(tick, taglineTypeDelay(content.tagline[taglineIndex - 1]));
+          return;
+        }
+
+        if (phase === "hold") {
+          phase = "tagline-delete";
+          window.setTimeout(tick, 120);
+          return;
+        }
+
+        if (phase === "tagline-delete") {
+          taglineIndex -= 1;
+          if (heroTagline) heroTagline.textContent = content.tagline.slice(0, taglineIndex);
+          if (taglineIndex === 0) {
+            phase = "title-delete";
+            setCursorTarget("title");
+            window.setTimeout(tick, 150);
+            return;
+          }
+          window.setTimeout(tick, taglineDeleteDelay);
+          return;
+        }
+
+        titleIndex -= 1;
+        typewriter.textContent = content.title.slice(0, titleIndex);
+        if (titleIndex === 0) {
+          phraseIndex = (phraseIndex + 1) % phraseContent.length;
+          phase = "title";
           window.setTimeout(tick, 450);
           return;
         }
@@ -91,6 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       typewriter.textContent = "";
+      if (heroTagline) heroTagline.textContent = "";
+      setCursorTarget("title");
       tick();
     }
   }
@@ -363,26 +422,81 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ── Animated counters ────────────────────────────────── */
-  const counters = document.querySelectorAll("[data-count]");
-  const countObserver = new IntersectionObserver((entries, instance) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const el = entry.target;
-      const target = Number(el.dataset.count);
-      const duration = target > 1000 ? 1700 : 1100;
-      const start = performance.now();
-      const tick = (now) => {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.floor(target * eased).toLocaleString("en-US");
-        if (progress < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-      instance.unobserve(el);
+  /* ── Real-time impact counters ────────────────────────── */
+  const liveCounters = document.querySelectorAll("[data-live-counter]");
+  const reduceCounterMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const buildCounterValue = (formattedValue, previousDigits = []) => {
+    const valueElement = document.createElement("span");
+    valueElement.className = "counter-value";
+    const newDigitCount = [...formattedValue].filter((character) => /\d/.test(character)).length;
+    let newDigitIndex = 0;
+
+    [...formattedValue].forEach((character) => {
+      if (/\d/.test(character)) {
+        const digitSlot = document.createElement("span");
+        digitSlot.className = "counter-digit-slot";
+        const oldDigitIndex = previousDigits.length - newDigitCount + newDigitIndex;
+        const oldDigit = oldDigitIndex >= 0 ? previousDigits[oldDigitIndex] : "";
+        const digit = document.createElement("span");
+        digit.className = "counter-digit-current";
+
+        if (!previousDigits.length || oldDigit === character || reduceCounterMotion) {
+          digit.textContent = character;
+          digitSlot.appendChild(digit);
+        } else {
+          digit.textContent = oldDigit;
+          const nextDigit = document.createElement("span");
+          nextDigit.className = "counter-digit-next";
+          nextDigit.textContent = character;
+          digit.classList.add("counter-digit-out");
+          digitSlot.append(digit, nextDigit);
+          nextDigit.addEventListener("animationend", () => {
+            digit.remove();
+            nextDigit.classList.remove("counter-digit-next");
+            nextDigit.classList.add("counter-digit-current");
+          }, { once: true });
+        }
+
+        valueElement.appendChild(digitSlot);
+        newDigitIndex += 1;
+      } else {
+        const separator = document.createElement("span");
+        separator.className = "counter-separator";
+        separator.textContent = character;
+        valueElement.appendChild(separator);
+      }
     });
-  }, { threshold: 0.65 });
-  counters.forEach((c) => countObserver.observe(c));
+    return valueElement;
+  };
+
+  liveCounters.forEach((counter) => {
+    const startingValue = Number(counter.dataset.liveStart);
+    const intervalMs = Number(counter.dataset.liveInterval);
+    const startedAt = Date.now();
+
+    const renderLiveValue = () => {
+      const increments = Math.floor((Date.now() - startedAt) / intervalMs);
+      const nextValue = (startingValue + increments).toLocaleString("en-US");
+      if (counter.dataset.currentValue === nextValue) return;
+
+      const currentValue = counter.querySelector(".counter-value");
+      if (!currentValue) {
+        counter.replaceChildren(buildCounterValue(nextValue));
+        counter.dataset.currentValue = nextValue;
+        return;
+      }
+
+      const previousDigits = [...currentValue.querySelectorAll(".counter-digit-slot")]
+        .map((slot) => slot.querySelector(".counter-digit-current")?.textContent || "");
+      counter.replaceChildren(buildCounterValue(nextValue, previousDigits));
+
+      counter.dataset.currentValue = nextValue;
+    };
+
+    renderLiveValue();
+    window.setInterval(renderLiveValue, 1000);
+  });
 
   /* ── Capability filter ────────────────────────────────── */
   const filterButtons = document.querySelectorAll("[data-filter]");
